@@ -9,8 +9,11 @@ def get_data_for_signal(data,indicator,only_params=False):
             'ma_length': range(data['ma_length']['min'],data['ma_length']['max']+1,data['ma_length']['step']),
             'MA_type': data['MA_type'],
             'rsi_type': data['rsi_type'],
+            'rsi_sell':range(data['rsi_sell']['min'],data['rsi_sell']['max']+1,data['rsi_sell']['step']),
+            'rsi_type_sell': data['rsi_type_sell'],
             'break_sell': data['break_sell'],
-            'rsi_upper': data['rsi_upper']
+            'rsi_upper': data['rsi_upper'],
+
 
         }
 
@@ -22,10 +25,10 @@ def get_data_for_signal(data,indicator,only_params=False):
 
 def clear_combinations(data_signals,df):
     comb_df=pd.DataFrame(data_signals)
-    df=df[['rsi_length','ma_length','MA_type','rsi_type','break_sell','rsi_upper']]
+    df=df[['rsi_length','ma_length','MA_type','rsi_type','rsi_sell','rsi_type_sell','break_sell','rsi_upper']]
     missing_combinations_df = comb_df.merge(
         df,
-        on=['rsi_length', 'ma_length', 'MA_type', 'rsi_type','break_sell','rsi_upper'],
+        on=['rsi_length', 'ma_length', 'MA_type', 'rsi_type','rsi_sell','rsi_type_sell','break_sell','rsi_upper'],
         how='left',
         indicator=True
     ).query('_merge == "left_only"').drop(columns=['_merge'])

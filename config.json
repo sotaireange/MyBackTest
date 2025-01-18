@@ -2,23 +2,29 @@
   "params": {
     "rsi_length": {
       "min": 7,
-      "max": 20,
+      "max": 25,
       "step": 1
     },
     "ma_length": {
       "min": 20,
-      "max": 45,
+      "max": 40,
       "step": 1
 
     },
     "MA_type":
-    ["VWMA"],
+    ["VWMA","WMA"],
     "rsi_type":
     ["rsi_bb"],
     "break_sell":
-    ["rsi_bb","maup"],
+    ["maup"],
     "rsi_upper":
-    [70,75],
+    [75],
+    "rsi_type_sell": ["VWMA","WMA","SMA"],
+    "rsi_sell":{
+      "min": 2,
+      "max": 10,
+      "step": 1
+    },
     "top": 200,
     "timeframe": 240
   }},

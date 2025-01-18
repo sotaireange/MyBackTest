@@ -1,7 +1,7 @@
 
 def get_fieldnames(indicator):
     if indicator == 'rsi_ma_short':
-        fieldnames = ['coin', 'rsi_length','ma_length','MA_type','rsi_type','break_sell','rsi_upper',
+        fieldnames = ['coin', 'rsi_length','ma_length','MA_type','rsi_type','rsi_sell','rsi_type_sell','break_sell','rsi_upper',
                       'pnl_perc','pnl_average_perc','sqn','moneydown','won','lost','winrate']
 
     return fieldnames
@@ -31,6 +31,8 @@ def get_row(coin,data_signal,res,indicator):
             'ma_length':data_signal['ma_length'],
             'MA_type':data_signal['MA_type'],
             'rsi_type':data_signal['rsi_type'],
+            'rsi_sell':data_signal['rsi_sell'],
+            'rsi_type_sell':data_signal['rsi_type_sell'],
             'break_sell':data_signal['break_sell'],
             'rsi_upper':data_signal['rsi_upper'],
             'pnl_perc': float(res.get('pnl_perc',0)),
