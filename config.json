@@ -1,0 +1,29 @@
+{"rsi_ma_short": {
+  "params": {
+    "rsi_length": {
+      "min": 7,
+      "max": 20,
+      "step": 1
+    },
+    "ma_length": {
+      "min": 20,
+      "max": 45,
+      "step": 1
+
+    },
+    "MA_type":
+    ["VWMA"],
+    "rsi_type":
+    ["rsi_bb"],
+    "break_sell":
+    ["rsi_bb","maup"],
+    "rsi_upper":
+    [70,75],
+    "top": 200,
+    "timeframe": 240
+  }},
+  "indicator": "rsi_ma_short",
+  "date_range":"2024-1-1/2025-1-1",
+  "core": 14,
+  "folder_path": "C:\\Users\\sallo\\Desktop\\FreeLance\\bybit\\myBackTest\\history\\DATA"
+}
