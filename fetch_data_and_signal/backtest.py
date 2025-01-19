@@ -22,12 +22,16 @@ class MSS(bt.Strategy):
         ('rsi_upper', 70),  # Уровень RSI для продаж
         ('ma_length', 28),
         ('rsi_bb_length', 3),  # Длина MA
-        ('deviation', 2.0),  # Отклонение для Bollinger Bands
         ('MA_type', "VWMA"),
         ('rsi_type', 'cross'),
         ('rsi_type_sell','VWMA'),
         ('break_sell', 'marsi')
     )
+
+    def log(self, txt, dt=None):
+        dt = dt or self.datas[0].datetime.datetime(0)
+        print(f'{dt}: {txt}')
+
 
     def __init__(self):
         # Индикаторы
@@ -66,27 +70,15 @@ class MSS(bt.Strategy):
         self.close_position = False
         self.break_sell=False
 
+
     def next(self):
-
-        if self.params.rsi_type == 'cross':
-            if self.rsi[0] < self.ma[0] and (
-                    self.rsi[-2] > self.params.rsi_upper and self.rsi[-1] <= self.params.rsi_upper):
-                self.sell_signal = True
-        elif self.params.rsi_type == 'rsi_bb':
-            if self.rsi_bb[0] < self.ma[0] and (self.rsi_bb[-1] > self.params.rsi_upper and self.rsi[0] <= self.params.rsi_upper):
-                self.sell_signal = True
-        elif self.params.rsi_type == 'crossfast':
-            if self.rsi[0] < self.ma[0] and (
-                    self.rsi[-1] > self.params.rsi_upper and self.rsi[0] <= self.params.rsi_upper):
-                self.sell_signal = True
-
         match self.params.break_sell:
             case 'marsi':
                 if self.rsi[0] > self.ma[0]:
                     self.break_sell = True
                     self.sell_signal = False
             case 'maup':
-                if self.rsi[0]>self.ma[0] or self.rsi[0]>self.params.rsi_upper:
+                if (self.rsi[0]>self.ma[0] or self.rsi[0]>self.params.rsi_upper) and self.sell_signal:
                     self.break_sell = True
                     self.sell_signal = False
             case 'rsi_bb':
@@ -95,18 +87,28 @@ class MSS(bt.Strategy):
                     self.sell_signal = False
 
 
-
-
-        if self.position and self.break_sell:
-            self.close()
-            self.break_sell=False
-            self.sell_signal=False
+        if self.params.rsi_type == 'cross':
+            if self.rsi[0] < self.ma[0] and (
+                    self.rsi[-2] > self.params.rsi_upper and self.rsi[-1] <= self.params.rsi_upper):
+                self.sell_signal = True
+        elif self.params.rsi_type == 'rsi_bb':
+            if self.rsi_bb[0] < self.ma[0] and (self.rsi_bb[-1] > self.params.rsi_upper and self.rsi_bb[0] <= self.params.rsi_upper):
+                self.sell_signal = True
+        elif self.params.rsi_type == 'crossfast':
+            if self.rsi[0] < self.ma[0] and (
+                    self.rsi[-1] > self.params.rsi_upper and self.rsi[0] <= self.params.rsi_upper):
+                self.sell_signal = True
 
 
         # Открытие первой позиции
         if self.sell_signal and not self.position:
             self.sell()
-            self.sell_signal=False
+
+
+        #ЗАКРЫТИЕ ПОЗИЦИИ
+        if self.position and self.break_sell:
+            self.close()
+            self.break_sell=False
 
 
 
@@ -115,8 +117,6 @@ def start_backtest(df, cerebro):
 
     cerebro.adddata(bt_feed)
     cerebro.addanalyzer(bt.analyzers.TradeAnalyzer, _name='tradeanalyzer')
-    cerebro.addanalyzer(bt.analyzers.DrawDown, _name='drawdown')
-    cerebro.addanalyzer(bt.analyzers.SQN, _name="sqn")
 
     cerebro.addsizer(bt.sizers.PercentSizer, percents=3)
     cerebro.broker.setcommission(commission=0.00075)
@@ -126,17 +126,14 @@ def start_backtest(df, cerebro):
     strats = cerebro.run()
 
     res_ta = strats[0].analyzers.getbyname('tradeanalyzer').get_analysis()
-    res_dd = strats[0].analyzers.getbyname('drawdown').get_analysis()
-    res_sh = strats[0].analyzers.getbyname('sqn').get_analysis()
+
 
     res = {}
     res['pnl_perc'] = res_ta.get('pnl', {}).get('net', {}).get('total', 0) / cash * 100 if cash else 0
     res['pnl_average_perc'] = res_ta.get('pnl', {}).get('net', {}).get('average', 0) / cash * 100 if cash else 0
-    res['sqn'] = res_sh.get('sqn', 0)
-    res['moneydown'] = res_dd.get('max', {}).get('drawdown', 0)
-    res['won'] = res_ta.get('won', {}).get('total', 1)
-    res['lost'] = res_ta.get('lost', {}).get('total', 1)
-    res['winrate'] = round(res['won'] / (res['won'] + res['lost']), 2)
+    res['won'] = res_ta.get('won', {}).get('total', 0)
+    res['lost'] = res_ta.get('lost', {}).get('total', 0)
+    res['winrate'] = round(res['won'] / (res_ta.get('total',{}).get('total',1)), 2)
     return res
 
 
