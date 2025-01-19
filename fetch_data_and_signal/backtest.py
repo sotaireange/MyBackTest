@@ -129,11 +129,13 @@ def start_backtest(df, cerebro):
 
 
     res = {}
+    closed_trades=res_ta.get('total',{}).get('closed',1)
+    if closed_trades==0: closed_trades=1
     res['pnl_perc'] = res_ta.get('pnl', {}).get('net', {}).get('total', 0) / cash * 100 if cash else 0
     res['pnl_average_perc'] = res_ta.get('pnl', {}).get('net', {}).get('average', 0) / cash * 100 if cash else 0
     res['won'] = res_ta.get('won', {}).get('total', 0)
     res['lost'] = res_ta.get('lost', {}).get('total', 0)
-    res['winrate'] = round(res['won'] / (res_ta.get('total',{}).get('total',1)), 2)
+    res['winrate'] = round(res['won'] / (closed_trades), 2)
     return res
 
 
